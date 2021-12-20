@@ -1,7 +1,7 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{CanonicalAddr, Storage, StdResult};
+use cosmwasm_std::{CanonicalAddr, StdResult, Storage};
 use cosmwasm_storage::{singleton, singleton_read, Singleton};
 
 pub static CONFIG_KEY: &[u8] = b"config";
@@ -17,4 +17,3 @@ pub fn store_config(storage: &mut dyn Storage) -> Singleton<Config> {
 pub fn read_config(storage: &dyn Storage) -> StdResult<Config> {
     singleton_read(storage, CONFIG_KEY).load()
 }
-

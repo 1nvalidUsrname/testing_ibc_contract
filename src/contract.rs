@@ -1,12 +1,13 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, 
-    Uint128, BankMsg, Coin};
+use cosmwasm_std::{
+    to_binary, BankMsg, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+};
 //use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::state::{Config, store_config, read_config};
+use crate::state::{read_config, store_config, Config};
 
 // version info for migration info
 //const CONTRACT_NAME: &str = "crates.io:token-holding-contract";
@@ -20,8 +21,8 @@ pub fn instantiate(
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
     store_config(deps.storage).save(&Config {
-            owner: deps.api.addr_canonicalize(&msg.owner)?
-        })?;
+        owner: deps.api.addr_canonicalize(&msg.owner)?,
+    })?;
     //set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     Ok(Response::new())
@@ -39,27 +40,30 @@ pub fn execute(
     }
 }
 
-pub fn tokens(deps: DepsMut, info: MessageInfo, amount: Option<Uint128>, denom: Option<String>) -> Result<Response, ContractError> {
+pub fn tokens(
+    deps: DepsMut,
+    info: MessageInfo,
+    amount: Option<Uint128>,
+    denom: Option<String>,
+) -> Result<Response, ContractError> {
     let config = read_config(deps.storage)?;
-    if deps.api.addr_canonicalize(&info.sender.as_str())? != config.owner {
-        ContractError::Unauthorized {};
+    if deps.api.addr_canonicalize(info.sender.as_str())? != config.owner {
+        return Err(ContractError::Unauthorized {});
     }
 
     match amount {
-        Some(amount) => {
-            match denom {
-                Some(denom) => {
-                    Ok(Response::new().add_message(BankMsg::Send {
-                        amount: vec![Coin::new(amount.u128(), denom)],
-                        to_address: info.sender.into_string(),
-                    }))
-                }
-                None => return Err(ContractError::TokenErr {denom: "token".to_string()})
+        Some(amount) => match denom {
+            Some(denom) => Ok(Response::new().add_message(BankMsg::Send {
+                amount: vec![Coin::new(amount.u128(), denom)],
+                to_address: info.sender.into_string(),
+            })),
+            None => {
+                Err(ContractError::TokenErr {
+                    denom: "token".to_string(),
+                })
             }
-        }
-        None => {
-            Ok(Response::default())
-        }
+        },
+        None => Ok(Response::default()),
     }
 }
 
@@ -72,5 +76,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
 fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = read_config(deps.storage)?;
-    Ok(ConfigResponse { owner: deps.api.addr_humanize(&config.owner)?.into_string()})
+    Ok(ConfigResponse {
+        owner: deps.api.addr_humanize(&config.owner)?.into_string(),
+    })
 }

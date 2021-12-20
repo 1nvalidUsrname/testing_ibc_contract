@@ -57,11 +57,9 @@ pub fn tokens(
                 amount: vec![Coin::new(amount.u128(), denom)],
                 to_address: info.sender.into_string(),
             })),
-            None => {
-                Err(ContractError::TokenErr {
-                    denom: "token".to_string(),
-                })
-            }
+            None => Err(ContractError::TokenErr {
+                denom: "token".to_string(),
+            }),
         },
         None => Ok(Response::default()),
     }

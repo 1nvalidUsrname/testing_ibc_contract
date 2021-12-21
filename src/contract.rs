@@ -1,13 +1,17 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, BankMsg, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+    to_binary, BankMsg, Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response, StdResult,
+    Uint128, WasmMsg,
 };
 //use cw2::set_contract_version;
 
 use crate::error::ContractError;
 use crate::msg::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg};
 use crate::state::{read_config, store_config, Config};
+
+use terraswap::asset::{Asset, AssetInfo};
+use terraswap::pair::ExecuteMsg as ExecuteSwapMsg;
 
 // version info for migration info
 //const CONTRACT_NAME: &str = "crates.io:token-holding-contract";
@@ -37,6 +41,11 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Bank { amount, denom } => tokens(deps, info, amount, denom),
+        ExecuteMsg::Swap {
+            swap_address,
+            amount,
+            offer_denom,
+        } => swap_asset(info, swap_address, amount, offer_denom),
     }
 }
 
@@ -65,11 +74,41 @@ pub fn tokens(
     }
 }
 
+pub fn swap_asset(
+    info: MessageInfo,
+    swap_address: String,
+    amount: Uint128,
+    offer_denom: String,
+) -> Result<Response, ContractError> {
+    let offer_asset: Asset = Asset {
+        info: { AssetInfo::NativeToken { denom: offer_denom } },
+        amount,
+    };
+
+    let message = to_binary(&ExecuteSwapMsg::Swap {
+        belief_price: None,
+        max_spread: None,
+        offer_asset,
+        to: None,
+    })?;
+
+    Ok(Response::new().add_message(WasmMsg::Execute {
+        contract_addr: swap_address,
+        msg: message,
+        funds: info.funds,
+    }))
+}
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
+        QueryMsg::ContractValue {} => to_binary(&query_contract_value()?),
     }
+}
+
+pub fn query_contract_value() -> StdResult<Uint128> {
+    Ok(Uint128::new(0))
 }
 
 fn query_config(deps: Deps) -> StdResult<ConfigResponse> {

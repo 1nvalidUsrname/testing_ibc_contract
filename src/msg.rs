@@ -15,6 +15,11 @@ pub enum ExecuteMsg {
         amount: Option<Uint128>,
         denom: Option<String>,
     },
+    Swap {
+        swap_address: String,
+        amount: Uint128,
+        offer_denom: String,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -22,6 +27,7 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     // GetCount returns the current count as a json-encoded number
     Config {},
+    ContractValue {},
 }
 
 // We define a custom struct for each query response

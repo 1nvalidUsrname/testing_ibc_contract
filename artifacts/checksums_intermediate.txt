@@ -1,1 +1,1 @@
-b829499bde0d6845d425d75df2cb54261e3a2df9f213ec5346b1ff3baf2c241a  ./target/wasm32-unknown-unknown/release/token_holding_contract.wasm
+be38ab207d31cb29bec0fa7355e0830c45ab2afeedb32da3f0fe27d70c0cb16e  ./target/wasm32-unknown-unknown/release/token_holding_contract.wasm

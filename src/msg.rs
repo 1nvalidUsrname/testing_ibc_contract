@@ -35,3 +35,6 @@ pub enum QueryMsg {
 pub struct ConfigResponse {
     pub owner: String,
 }
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct MigrateMsg {}

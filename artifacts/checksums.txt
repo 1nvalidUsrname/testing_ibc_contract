@@ -1,1 +1,1 @@
-039e2e2b5c2d48ecd4ff978077b913db65e798ff2be98fabaf6980c7bd581986  token_holding_contract.wasm
+a33ff991cfbd20c66abc757d62fc529860d878fa055005e5fd65c07b69c45f58  token_holding_contract.wasm
